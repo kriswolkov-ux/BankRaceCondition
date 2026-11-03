@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 
 namespace BankRaceCondition.Models;
@@ -25,7 +25,7 @@ public sealed class BankAccount
             throw new ArgumentOutOfRangeException(nameof(amount));
 
         decimal currentBalance = _balance;
-        Thread.SpinWait(1000); // Искусственная задержка для провоцирования гонки
+        Thread.SpinWait(1000);
         _balance = currentBalance + amount;
     }
 
@@ -37,6 +37,25 @@ public sealed class BankAccount
         lock (_sync)
         {
             _balance += amount;
+        }
+    }
+
+    public bool Withdraw(decimal amount)
+    {
+        if (amount <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(amount));
+        }
+
+        lock (_sync)
+        {
+            if (_balance < amount)
+            {
+                return false;
+            }
+
+            _balance -= amount;
+            return true;
         }
     }
 }
